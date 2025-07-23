@@ -8,7 +8,7 @@ docker-compose up -d
 
 ## 2. Configure Environment Variables
 
-- Enter your GitHub information in the `.env` file located in the project root of  `AI-Agent`
+- Enter your supabase information in the `.env` file located in the project root of  `AI-Agent` 
 
 ## 3. Install All Packages
 
