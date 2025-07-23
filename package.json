@@ -1,0 +1,20 @@
+{
+    "name": "FumaDocs Rag AI Agent",
+    "scripts": {
+        "install:frontend": "cd FumaDocs && npm install",
+        "install:backend": "cd AI-Agent && npm install",
+        "install:mcp": "cd swagger-mcp && npm install",
+        "install:all": "npm run install:frontend && npm run install:backend && npm run install:mcp && npm run install",
+        "build:mcp": "cd swagger-mcp && npm run build",
+        "build:frontend": "cd FumaDocs && npm run build",
+        "build:backend": "cd AI-Agent && npm run build",
+        "build:all": "npm run build:frontend && npm run build:backend && npm run build:mcp",
+        "generateDocs": "cd FumaDocs && node scripts/generate-docs.mjs",
+        "start:Fuma": "cd FumaDocs && npm start",
+        "start:AI": "cd AI-Agent && npm start",
+        "start:all": "concurrently \"npm run start:Fuma\" \"npm run start:AI\""
+    },
+    "devDependencies": {
+        "concurrently": "^9.2.0"
+    }
+}
