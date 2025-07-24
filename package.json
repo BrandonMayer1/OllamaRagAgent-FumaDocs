@@ -4,7 +4,7 @@
         "install:frontend": "cd FumaDocs && npm install",
         "install:backend": "cd AI-Agent && npm install",
         "install:mcp": "cd swagger-mcp && npm install",
-        "install:all": "npm run install:frontend && npm run install:backend && npm run install:mcp && npm run install",
+        "install:all": "npm install && npm run install:frontend && npm run install:backend && npm run install:mcp",
         "build:mcp": "cd swagger-mcp && npm run build",
         "build:frontend": "cd FumaDocs && npm run build",
         "build:backend": "cd AI-Agent && npm run build",

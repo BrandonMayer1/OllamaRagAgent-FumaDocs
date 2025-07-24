@@ -91,12 +91,15 @@ export class ChunkingService {
     const ids = results.ids?.[0] || [];
     const docs = results.documents?.[0] || [];
 
-    let output = '';
+    const resultsArray: { documentName: string; documentContent: string | null }[] = [];
     for (let i = 0; i < ids.length; i++) {
-      output += `DOCUMENT NAME: ${ids[i]}\nDOCUMENT CONTENT: \n${docs[i]}\n----------------------------------------\n`;
+      resultsArray.push({
+        documentName: ids[i],
+        documentContent: docs[i],
+      });
     }
     console.log('RAG document retrieval complete.');
-    return output;
+    return resultsArray;
   }
 
   // Finds the best document from 10 chunks
@@ -140,7 +143,7 @@ export class ChunkingService {
     // LOOKS FOR DOCS THAT HAVE A CLOSE AVERAGE TO THE CLOSEST ONE AND ADDS IT
     for (const doc in docDistanceSum) {
       const avgDistance = docDistanceSum[doc] / docCount[doc];
-      if (Math.abs(avgDistance - lowestAvgDistance) <= 0.1) {
+      if (Math.abs(avgDistance - lowestAvgDistance) <= 0.2) {
         lowAverageDocs.push(doc);
         // Only log doc id, not full content
         console.log(`Added document to nearTopDocs: ${doc}`);
