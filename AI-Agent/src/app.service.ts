@@ -10,7 +10,6 @@ import { Ollama } from '@langchain/ollama';
 export class AppService {
   constructor(
     private readonly httpService: HttpService,
-    private readonly fileUploadService: FileUploadService,
     private readonly chunkingService: ChunkingService,
     private readonly mcp: McpService,
   ) {}
@@ -45,54 +44,47 @@ export class AppService {
         {
           role: 'system',
           content: `You're a helpful and intelligent assistant that can answer questions about a web API. You have access to detailed API documentation and can call functions directly if needed.
-
-When responding:
-- Feel free to reference documentation to explain things clearly.
-- If a user's request can be fulfilled using an API function, return just the required function and parameters as JSON.
-- If information is missing, ask for it clearly and concisely.
-- Otherwise, reply conversationally with the best information available.
-
-Always be clear, helpful, and focused on solving the user's problem.
-
-You can respond in two ways:
-
-A) Natural language (when explanation is enough)
-B) JSON tool call (when API interaction is needed), like:
-
-Tool calls must be returned using this exact JSON format (no extra commentary):
-
-{
-  "tool_calls": [
-    {
-      "function": {
-        "name": "tool_name",
-        "arguments": {
-          "arg1": "value1"
-        }
+      
+      When responding:
+      - Reference documentation if needed.
+      - If a user's request can be fulfilled using an API function, return only the required function and parameters as JSON.
+      - If information is missing, ask for it.
+      - Otherwise, respond conversationally.
+      
+      Two response modes:
+      A) Natural language explanation
+      B) JSON tool call ONLY (no text) — format:
+      {
+        "tool_calls": [
+          {
+            "function": {
+              "name": "tool_name",
+              "arguments": {
+                "arg1": "value1"
+              }
+            }
+          }
+        ]
       }
-    }
-  ]
-}
-
-Rules:
-- Never mix tool call and text.
-- Ask for missing arguments.
-- Do not include any commentary with tool calls.
-- Respond conversationally when no tool call is needed.
-
-
-HERE IS THE RAG DOCUMENTS:
-
-<context>
-${JSON.stringify(context)}
-</context>
- 
-HERE IS THE SWAGGER FILEPATH
-<swagger_file_path>../fumaDocs.json</swagger_file_path>
-`,},
-{role: 'user',
-  content: `${message}`,
-}
+      
+      Rules:
+      - Never mix tool call and text.
+      - Don't add commentary with tool calls.
+      - Be concise and helpful.`,
+        },
+        {
+          role: 'system',
+          content: `Relevant documentation:\n${JSON.stringify(context)}`,
+        },
+        {
+          role: 'system',
+          content: `Swagger File Path: ../fumaDocs.json`,
+        },
+        {
+          role: 'user',
+          content: `${message}`,
+        },
+        
       ],
       stream: false,
       tools: ollamaTools,
@@ -147,6 +139,7 @@ ${message}
 
 Respond conversationally with the answer.`,
               },
+              {role: 'system', content: `Relevant documentation:\n${JSON.stringify(context)}`},
               { role: 'user', content: `${message}` },
             ],
             stream: false,
