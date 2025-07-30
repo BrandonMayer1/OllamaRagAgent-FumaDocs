@@ -81,19 +81,24 @@ export class AppController {
           <script>
             document.getElementById("chatForm").addEventListener('submit', async function(e) {
               e.preventDefault();
+
               const inputElement = document.getElementById('messageInput');
               const message = inputElement.value;
+              const useAdvanced = document.getElementById('useAdvancedModel').checked;
+
               const chatBox = document.getElementById('chatBox');
               chatBox.innerHTML += '<div class="bubble user">You: ' + message + '</div>';
               inputElement.value = '';
+
               try {
                 const response = await fetch('/submit', {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json',
                   },
-                  body: JSON.stringify({ message: message })
+                  body: JSON.stringify({ message: message, useAdvanced: useAdvanced })
                 });
+
                 const data = await response.json();
                 chatBox.innerHTML += '<div class="bubble ai">AI: ' + data.aiResponse + '</div>';
               } catch (error) {
@@ -102,6 +107,10 @@ export class AppController {
             });
           </script>
         </body>
+        <label>
+          <input type="checkbox" id="useAdvancedModel" />
+          Use smarter reasoning for code generation (Deepseek-CoderV2)
+        </label>
       </html>
     `;
   }
@@ -109,8 +118,9 @@ export class AppController {
   @Post('submit')
   async handleSubmit(@Body() body) {
     const userMessage = body.message;
+    const useAdvanced = body.useAdvanced;
     this.UserChats.push(userMessage);
-    const AiResponse = await this.appService.startChat(userMessage);
+    const AiResponse = await this.appService.startChat(userMessage, useAdvanced);
     this.AiChats.push(AiResponse);
     return { aiResponse: AiResponse };
   }

@@ -34,8 +34,11 @@ npm run build:all
 - llama 3.1 and mxbai-embed-large
 
 ```sh
-ollama serve llama3.1
-ollama mxbai-embed-large
+ollama pull llama3.1
+ollama pull mxbai-embed-large
+
+**If you want to enable smarter code generation**
+ollama pull deepseek-coder-v2
 ```
 
 ## 7. Start the App.

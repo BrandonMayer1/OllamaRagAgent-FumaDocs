@@ -38,7 +38,6 @@ export class McpService implements OnModuleInit, OnModuleDestroy {
                 this.pending.delete(msg.id);
               }
             } catch (e) {
-              console.error('Failed to parse MCP response. Raw data chunk:', data.toString());
             }
           });
       });

@@ -15,7 +15,7 @@ export class AppService {
   ) {}
   private chatHistory: Array<{ role: string; content: string }> = [];
 
-  async startChat(message: string) {
+  async startChat(message: string, useAdvanced: Boolean) {
     // Start Tools
     const toolsResult = await this.mcp.listTools();
     const ollamaTools = toolsResult.tools.slice(1).map((tool) => ({
@@ -115,8 +115,16 @@ export class AppService {
           const result = await this.mcp.invokeTool(toolName, args);
           console.log(`Tool ${toolName} call completed.`);
 
+          //LOGIC FOR ADVANCED REASONING 
+          let AiModel = "llama3.1";
+          if (useAdvanced){
+            AiModel = "deepseek-coder-v2"
+          }
+
+
+
           const followUpPayload = {
-            model: 'llama3.1',
+            model: AiModel, //CHANGE TO LLAMA3.1 FOR LESS STORAGE USE
             messages: [
               ...this.chatHistory,
               {
