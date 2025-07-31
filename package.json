@@ -12,7 +12,8 @@
         "generateDocs": "cd FumaDocs && node scripts/generate-docs.mjs",
         "start:Fuma": "cd FumaDocs && npm start",
         "start:AI": "cd AI-Agent && npm start",
-        "start:all": "concurrently \"npm run start:Fuma\" \"npm run start:AI\""
+        "start:all": "concurrently \"npm run start:Fuma\" \"npm run start:AI\"" ,
+        "clearDB": "cd AI-Agent && node clearChroma.js"
     },
     "devDependencies": {
         "concurrently": "^9.2.0"

@@ -49,8 +49,17 @@ npm run start:all
 The fumadocs will be running on port 3000
 The Ai agent will be runnign on port 3001
 
-
+# Use smarter reasoning for code generation (Must have Deepseek-CoderV2 installed)
+ -Uses DeepseekCoder-V2 instead of Ollama3.1 
+# File Uploads are stored in supabase (Must have github .env setup)
+ -Uploaded files from the manual submit button to supabase, if the user entered their supabase credentails to .env
 
 ## To change the Open AI docs. 
 Paste new information into fumaDocs.json.
+
+## CLEAR THE VECTORDB
+```sh
+npm run clearDB
+```
+
 
