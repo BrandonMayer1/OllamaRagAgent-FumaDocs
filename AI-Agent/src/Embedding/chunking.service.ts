@@ -55,7 +55,19 @@ export class ChunkingService {
 
   async storeInQdrant(embedding: number[], text: string, documentName: string) {
     try {
-      const collection = await this.client.getOrCreateCollection({ name: 'markdown-store' });
+      const collection = await this.client.getOrCreateCollection({ 
+        name: 'markdown-store',
+        embeddingFunction: {
+          generate: async (texts: string[]): Promise<number[][]> => {
+            const embeddings: number[][] = [];
+            for (const text of texts) {
+              const embedding = await this.toVector(text);
+              embeddings.push(embedding);
+            }
+            return embeddings;
+          }
+        }
+      });
       await collection.upsert({
         ids: [documentName],
         embeddings: [embedding],
@@ -69,7 +81,19 @@ export class ChunkingService {
 
   //--------------------------RETRIEVAL-----------------------------------------
   async queryWithMessage(message: string) {
-    const collection = await this.client.getOrCreateCollection({ name: 'markdown-store' });
+    const collection = await this.client.getOrCreateCollection({ 
+      name: 'markdown-store',
+      embeddingFunction: {
+        generate: async (texts: string[]): Promise<number[][]> => {
+          const embeddings: number[][] = [];
+          for (const text of texts) {
+            const embedding = await this.toVector(text);
+            embeddings.push(embedding);
+          }
+          return embeddings;
+        }
+      }
+    });
     console.log('Querying vector database with message.');
 
     const vectorQuery = await this.toVector(message);
@@ -106,7 +130,19 @@ export class ChunkingService {
   // Weighs them based on Average Similarity
   // Returns the best one or multiple if there are more than 1 with a close .1 similarity
   async findTopDocument(query: number[]) {
-    const collection = await this.client.getOrCreateCollection({ name: 'markdown-store' });
+    const collection = await this.client.getOrCreateCollection({ 
+      name: 'markdown-store',
+      embeddingFunction: {
+        generate: async (texts: string[]): Promise<number[][]> => {
+          const embeddings: number[][] = [];
+          for (const text of texts) {
+            const embedding = await this.toVector(text);
+            embeddings.push(embedding);
+          }
+          return embeddings;
+        }
+      }
+    });
     const results = await collection.query({
       queryEmbeddings: [query],
       nResults: 10,
