@@ -128,7 +128,7 @@ export class ChunkingService {
 
   // Finds the best document from 10 chunks
   // Weighs them based on Average Similarity
-  // Returns the best one or multiple if there are more than 1 with a close .1 similarity
+  // Returns the best one or multiple if there are more than 1 with a close .12 similarity
   async findTopDocument(query: number[]) {
     const collection = await this.client.getOrCreateCollection({ 
       name: 'markdown-store',
@@ -179,7 +179,7 @@ export class ChunkingService {
     // LOOKS FOR DOCS THAT HAVE A CLOSE AVERAGE TO THE CLOSEST ONE AND ADDS IT
     for (const doc in docDistanceSum) {
       const avgDistance = docDistanceSum[doc] / docCount[doc];
-      if (Math.abs(avgDistance - lowestAvgDistance) <= 0.2) {
+      if (Math.abs(avgDistance - lowestAvgDistance) <= 0.12) {
         lowAverageDocs.push(doc);
         // Only log doc id, not full content
         console.log(`Added document to nearTopDocs: ${doc}`);

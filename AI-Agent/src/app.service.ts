@@ -43,48 +43,47 @@ export class AppService {
         ...this.chatHistory,
         {
           role: 'system',
-          content: `You're a helpful and intelligent assistant that can answer questions about a web API. You have access to detailed API documentation and can call functions directly if needed.
-      
-      When responding:
-      - Reference documentation if needed.
-      - If a user's request can be fulfilled using an API function, return only the required function and parameters as JSON.
-      - If information is missing, ask for it.
-      - Otherwise, respond conversationally.
-      
-      Two response modes:
-      A) Natural language explanation
-      B) JSON tool call ONLY (no text) — format:
-      {
-        "tool_calls": [
-          {
-            "function": {
-              "name": "tool_name",
-              "arguments": {
-                "arg1": "value1"
-              }
-            }
-          }
-        ]
-      }
-      
-      Rules:
-      - Never mix tool call and text.
-      - Don't add commentary with tool calls.
-      - Be concise and helpful.`,
+          content: `You are an AI assistant with access to web API documentation via RAG and function calling capabilities.
+        
+        CRITICAL HISTORY TRACKING:
+        - Always review the conversation history above for context
+        - When you provide numbered lists, remember the EXACT order and mapping
+        - When users reference numbers (1, 2, 3, etc.), they refer to the EXACT position in your most recent numbered list
+        - Double-check your previous response to ensure correct mapping before making function calls
+        
+        RESPONSE RULES:
+        You have exactly TWO response modes - never mix them:
+        
+        CONVERSATIONAL RESPONSES:
+        - Use for greetings, general questions, explanations, and natural conversation
+        - Answer API questions directly using the documentation context provided
+        - When providing lists, use clear numbering that you can reference later
+        
+        FUNCTION CALLS:
+        - Use when the user requests generated code/examples (curl commands, SDK code, etc.)
+        - Return ONLY the JSON tool call with no explanations or commentary
+        - Before making the call, verify the numbered reference against your previous response
+        - Include context from conversation history in your function parameters
+        
+        NUMBERED REFERENCE HANDLING:
+        - "curl for 1" = first item in your last numbered list
+        - "curl for 2" = second item in your last numbered list
+        - Always double-check the mapping before making function calls
+        
+        When making function calls, respond with ONLY the JSON - no introductory text or explanations.`
+        },
+        {
+          role: 'system', 
+          content: `API Documentation:\n${JSON.stringify(context)}`
         },
         {
           role: 'system',
-          content: `Relevant documentation:\n${JSON.stringify(context)}`,
-        },
-        {
-          role: 'system',
-          content: `Swagger File Path: ../fumaDocs.json`,
+          content: `Swagger specification: ../fumaDocs.json`
         },
         {
           role: 'user',
-          content: `${message}`,
-        },
-        
+          content: message
+        }
       ],
       stream: false,
       tools: ollamaTools,
@@ -128,27 +127,35 @@ export class AppService {
             messages: [
               ...this.chatHistory,
               {
-                role: 'assistant',
-                content: `Analyze this tool result and answer the user's question:
-
-Tool Used: ${toolName}
-Tool Result: ${JSON.stringify(result)}
-
-Steps:
-1. Extract key insights from the result
-2. Connect them to the user's question
-3. Provide a clear answer referencing:
-   - Relevant data points
-   - Limitations
-   - How it answers their question
-
-User's Original Question:
-${message}
-
-Respond conversationally with the answer.`,
+                role: 'system',
+                content: `You are an AI assistant that presents tool execution results to users in a clear, helpful way.
+              
+              TASK: Answer the user's question directly using the provided data.
+              
+              TOOL DATA:
+              - Tool: ${toolName}
+              - Result: ${JSON.stringify(result)}
+              - User Question: "${message}"
+              
+              INSTRUCTIONS:
+              - Answer the user's question using the result data
+              - Present information clearly and conversationally
+              - Format code/commands with proper markdown code blocks
+              - If result contains curl commands or code, display them cleanly
+              - Explain any important details or limitations
+              
+              CRITICAL: Do not mention "tool calls", "tool results", "based on the tool", or "according to the tool". Simply present the information as if you generated it directly.
+              
+              Be direct, helpful, and well-formatted in your response.`
               },
-              {role: 'system', content: `Relevant documentation:\n${JSON.stringify(context)}`},
-              { role: 'user', content: `${message}` },
+              {
+                role: 'system', 
+                content: `API Documentation:\n${JSON.stringify(context)}`
+              },
+              {
+                role: 'user', 
+               content: message
+              }
             ],
             stream: false,
           };
@@ -177,44 +184,14 @@ Respond conversationally with the answer.`,
     const topicMessage = [
       ...this.chatHistory,
       {
-        role: 'user',
-        content: `
-You are an advanced AI assistant specialized in extracting optimal search terms from given messages. Your task is to analyze the following message and extract the most searchable keywords and phrases for use in vector database queries. Your output will be used directly in these queries, so precision and relevance are paramount.
-
-Here is the message you need to analyze:
-
-<message>
-${message}
-</message>
-
-Instructions:
-1. Carefully read and analyze the given message.
-2. Extract the most relevant keywords and phrases that would work best in a vector database query.
-3. Focus on the following elements:
-  - Technical terms
-  - Proper nouns
-  - Numbers and measurements
-  - Domain-specific jargon
-  - Action verbs
-4. Exclude the following!!!!!:
-  - Explanations or commentary
-  - Your own thoughts or interpretations
-  - Reworded versions of the task
-  - Any output that isn't directly usable as a search query
-5. If the input message is unclear or vague, return it AS IS without any modifications or commentary.
-
-After your analysis, provide your final output as a single line of text containing only the optimized query terms. Do not include any additional formatting, tags, or explanations in the final output.
-
-Remember:
-- Return ONLY optimized query terms in one line- no full sentences, no explanations, no filler text.
-- If the input is unclear, return it unchanged without commentary.
-- DO NOT ADD YOUR COMMENTARY ONLY OPTIMIZED WORDS FOR SEARCH
-- Precision and relevance are crucial - each term in your output should significantly contribute to the query's effectiveness.
-- I will you response exactly into the search so not additionaly commentary or notes.
-- IMPORTANT RESPOND WITH ONE LINE ONLY OF KEYWORDS
-`,
+        role: 'system',
+        content: `Your only purpose is as a keyword extractor for a search, respond only with the searchable keywords. Read the conversation history above, then extract search keywords from the message below.
+    Extract only the most important searchable terms as space-separated keywords on one line. If the message references previous conversation (like "number 1", "that endpoint"), include relevant context keywords. ADD NO EXTRA COMMENTARY OR NOTES JUST THE KEYWORDS!`
       },
-    ];
+      {
+        role: 'user', 
+        content: `Here is the message: ${message}`
+      }];
 
     const topicPayload = {
       model: 'llama3.1',
@@ -231,7 +208,7 @@ Remember:
         }),
       );
       // Return only the first line of the response content
-      return response.data.message.content.split('\n')[0];
+      return response.data.message.content;
     } catch (error) {
       console.error('Error in OptimzedMessage:', error.message);
       throw error;

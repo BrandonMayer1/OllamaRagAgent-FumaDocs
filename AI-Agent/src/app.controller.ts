@@ -16,6 +16,7 @@ export class AppController {
   private UserChats: string[] = [];
   private AiChats: string[] = [];
   private usingSupabase: boolean = false;
+  private isProcessing: boolean = false;
 
   @Get()
   Homepage() {
@@ -175,6 +176,12 @@ export class AppController {
             box-shadow: 0 0 0 2px rgba(45, 167, 238, 0.2);
         }
 
+        #messageInput:disabled {
+            background-color: #f5f5f5;
+            color: #999;
+            cursor: not-allowed;
+        }
+
         .submit-btn {
             padding: 12px 20px;
             background-color: #2da7ee;
@@ -185,8 +192,13 @@ export class AppController {
             font-size: 16px;
         }
 
-        .submit-btn:hover {
+        .submit-btn:hover:not(:disabled) {
             background-color: #2590c7;
+        }
+
+        .submit-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
         }
 
         .upload-form {
@@ -250,16 +262,7 @@ export class AppController {
             margin-top: 2px;
         }
 
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 8px;
-            color: #666;
-            font-style: italic;
-            background: rgba(255,255,255,0.9);
-            border-radius: 4px;
-            margin: 5px 0;
-        }
+
     </style>
 </head>
 <body>
@@ -267,14 +270,12 @@ export class AppController {
         <div class="chat-box" id="chatBox">
             ${chatHistory}
         </div>
-
-        <div class="loading" id="loading">Thinking...</div>
     </div>
 
     <div class="controls-container">
         <form class="chat-form" id="chatForm">
             <input type="text" id="messageInput" placeholder="Type your message..." required />
-            <button type="submit" class="submit-btn">Submit</button>
+            <button type="submit" class="submit-btn" id="submitBtn">Submit</button>
         </form>
 
         <form class="upload-form" action="/upload" method="post" enctype="multipart/form-data" id="uploadForm">
@@ -304,7 +305,23 @@ export class AppController {
         const supabaseCheckbox = document.getElementById('useSupabase');
         const hiddenUseSupabase = document.getElementById('hiddenUseSupabase');
         const chatBox = document.getElementById('chatBox');
-        const loading = document.getElementById('loading');
+        const messageInput = document.getElementById('messageInput');
+        const submitBtn = document.getElementById('submitBtn');
+        let isProcessing = false;
+
+        function setProcessingState(processing) {
+            isProcessing = processing;
+            messageInput.disabled = processing;
+            submitBtn.disabled = processing;
+            
+            if (processing) {
+                messageInput.placeholder = 'AI is thinking...';
+                submitBtn.textContent = 'Processing...';
+            } else {
+                messageInput.placeholder = 'Type your message...';
+                submitBtn.textContent = 'Submit';
+            }
+        }
 
                  document.addEventListener('DOMContentLoaded', function() {
              document.getElementById('useSupabase').checked = ${this.usingSupabase};
@@ -360,18 +377,23 @@ export class AppController {
         document.getElementById("chatForm").addEventListener('submit', async function(e) {
             e.preventDefault();
 
+            // Prevent submission if already processing
+            if (isProcessing) {
+                return;
+            }
+
             const inputElement = document.getElementById('messageInput');
             const message = inputElement.value;
             const useAdvanced = document.getElementById('useAdvancedModel').checked;
 
             if (!message.trim()) return;
 
+            // Set processing state
+            setProcessingState(true);
+
             // Add user message
             addMessage('You: ' + message, true);
             inputElement.value = '';
-
-            // Show loading
-            loading.style.display = 'block';
 
             try {
                 const response = await fetch('/submit', {
@@ -387,9 +409,6 @@ export class AppController {
 
                 const data = await response.json();
                 
-                // Hide loading and add response
-                loading.style.display = 'none';
-                
                 // Remove "AI: " prefix if it exists since we add it in addMessage
                 let aiResponse = data.aiResponse;
                 if (aiResponse.startsWith('AI: ')) {
@@ -398,14 +417,16 @@ export class AppController {
                 addMessage('AI: ' + aiResponse, false);
                 
             } catch (error) {
-                loading.style.display = 'none';
                 addMessage('AI: Error getting response', false);
+            } finally {
+                // Reset processing state
+                setProcessingState(false);
             }
         });
 
         // Handle Enter key
         document.getElementById('messageInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
+            if (e.key === 'Enter' && !isProcessing) {
                 e.preventDefault();
                 document.getElementById('chatForm').dispatchEvent(new Event('submit'));
             }
@@ -445,15 +466,31 @@ export class AppController {
 
   @Post('submit')
   async handleSubmit(@Body() body) {
-    const userMessage = body.message;
-    const useAdvanced = body.useAdvanced;
-    if (useAdvanced){
-      console.log("[!!] USING ADVANCED REASONING [!!]");
+    // Check if already processing
+    if (this.isProcessing) {
+      return { aiResponse: 'Please wait for the current response to complete.' };
     }
-    this.UserChats.push(userMessage);
-    const AiResponse = await this.appService.startChat(userMessage, useAdvanced);
-    this.AiChats.push(AiResponse);
-    return { aiResponse: AiResponse };
+
+    // Set processing state
+    this.isProcessing = true;
+
+    try {
+      const userMessage = body.message;
+      const useAdvanced = body.useAdvanced;
+      if (useAdvanced){
+        console.log("[!!] USING ADVANCED REASONING [!!]");
+      }
+      this.UserChats.push(userMessage);
+      const AiResponse = await this.appService.startChat(userMessage, useAdvanced);
+      this.AiChats.push(AiResponse);
+      return { aiResponse: AiResponse };
+    } catch (error) {
+      console.error('Error in handleSubmit:', error);
+      return { aiResponse: 'An error occurred while processing your request.' };
+    } finally {
+      // Reset processing state
+      this.isProcessing = false;
+    }
   }
 
   @Post('upload')
