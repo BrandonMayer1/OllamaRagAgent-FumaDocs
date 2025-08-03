@@ -288,7 +288,7 @@ export class AppController {
             <div class="checkbox-container">
                 <label>
                     <input type="checkbox" id="useAdvancedModel" />
-                    Use smarter reasoning for code generation (Must have Deepseek-CoderV2 installed)
+                    Use smarter reasoning for code generation (Must have Deepseek-CoderV2 installed & Higher VRAM usage)
                 </label>
             </div>
 
