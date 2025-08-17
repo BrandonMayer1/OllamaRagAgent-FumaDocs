@@ -1,5 +1,5 @@
 {
-    "name": "FumaDocs Rag AI Agent",
+    "name": "fumadocsragaiagent",
     "scripts": {
         "install:frontend": "cd FumaDocs && npm install",
         "install:backend": "cd AI-Agent && npm install",

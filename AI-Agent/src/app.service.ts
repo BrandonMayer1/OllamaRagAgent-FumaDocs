@@ -1,10 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
-import { FileUploadService } from './file-upload.service';
 import { ChunkingService } from './Embedding/chunking.service';
 import { McpService } from './mcp/mcp.service';
-import { Ollama } from '@langchain/ollama';
 
 @Injectable()
 export class AppService {

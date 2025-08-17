@@ -7,7 +7,7 @@ import path from 'path';
 import fetch from 'node-fetch';
 
 //Create Ollama and ChromaClient collections
-const client = new ChromaClient();
+const client = new ChromaClient({ path: "http://localhost:8000" });
 const embeddings = new OllamaEmbeddings({
     model: "mxbai-embed-large", 
     baseUrl: "http://localhost:11434", 

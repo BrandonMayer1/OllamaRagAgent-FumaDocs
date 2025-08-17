@@ -3,7 +3,8 @@
  * Defines a reusable prompt template for guiding an agent through the process of adding a new endpoint
  */
 
-import { z } from 'zod';
+import { z } from "zod";
+
 
 // Define the prompt schema with arguments
 export const addEndpointPrompt = {

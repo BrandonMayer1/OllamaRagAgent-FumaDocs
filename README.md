@@ -71,7 +71,7 @@ npm run generateDocs
 ```bash
 npm run build:all
 ```
-
+*Note may take a while.
 ## 🤖 Ollama Setup
 
 Install and configure Ollama models:

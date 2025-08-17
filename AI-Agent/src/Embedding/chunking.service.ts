@@ -10,7 +10,7 @@ export class ChunkingService {
   private client: ChromaClient;
 
   constructor() {
-    this.client = new ChromaClient();
+    this.client = new ChromaClient({ path: "http://localhost:8000" });
     this.embeddings = new OllamaEmbeddings({
       model: 'mxbai-embed-large',
       baseUrl: 'http://localhost:11434',

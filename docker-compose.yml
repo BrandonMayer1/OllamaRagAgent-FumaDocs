@@ -1,16 +1,20 @@
-version: '3.8'
+# docker-compose.yml
+version: "3.8"
 
 services:
-  chroma-db:
-    image: ghcr.io/chroma-core/chroma:latest
-    container_name: chroma-db
+  chroma:
+    image: chromadb/chroma:latest
+    container_name: chroma
     ports:
-      - "8000:8000"    # adjust if needed
-    volumes:
-      - chroma-data:/chroma-db  # persistent storage
+      - "8000:8000"
     environment:
-      - CHROMA_SETTING=your_value  # add any env vars if needed
-    restart: unless-stopped
-
-volumes:
-  chroma-data:
+      - IS_PERSISTENT=TRUE
+      - CHROMA_SERVER_HOST=0.0.0.0
+      - CHROMA_SERVER_HTTP_PORT=8000
+    volumes:
+      - ./chroma-data:/chroma/.chroma/index
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/api/v1/heartbeat"]
+      interval: 5s
+      timeout: 2s
+      retries: 20
